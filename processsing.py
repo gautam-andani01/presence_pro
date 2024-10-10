@@ -64,11 +64,7 @@ def transformation(keka_path, biometric_path):
 
     # # Reset index if needed and print or save the updated DataFrame
     keka_df.reset_index(inplace=True)
-
+    consolidated_path = 'consolidated_attendance_optimized.xlsx'
     # Optionally save to an Excel or CSV file
-    keka_df.to_excel('consolidated_attendance_optimized.xlsx', index=False)
-    # biometrics_df.to_excel('biometric_optimized.xlsx', index=False)
-    
-
-# function calling
-transformation('keka.xlsx','biometric.xlsx')    
+    keka_df.to_excel(consolidated_path, index=False)
+    return consolidated_path
