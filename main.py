@@ -8,7 +8,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from datetime import datetime
 from pathlib import Path
-from processsing import transformation
+from processing import transformation
 
 class ModernApp(QWidget):
     def __init__(self):
@@ -18,19 +18,27 @@ class ModernApp(QWidget):
     def init_ui(self):
         # Set window properties
         self.setWindowTitle('Modern File Processor')
-        self.setGeometry(100, 100, 500, 400)
+        self.setGeometry(100, 100, 500, 500)
         
         # Set overall layout
         self.layout = QVBoxLayout()
 
-        # Create labels and buttons with modern style
-        self.label_biometric = QLabel('Upload Biometric File', self)
-        self.label_biometric.setAlignment(Qt.AlignCenter)
-        self.label_biometric.setFont(QFont('Arial', 10))
-        
-        self.button_biometric = QPushButton('Upload Biometric File', self)
-        self.button_biometric.setObjectName('uploadButton')
-        self.button_biometric.clicked.connect(self.upload_biometric)
+        # Create labels and buttons for Indore and Raipur biometric files
+        self.label_indore_biometric = QLabel('Upload Indore Biometric File', self)
+        self.label_indore_biometric.setAlignment(Qt.AlignCenter)
+        self.label_indore_biometric.setFont(QFont('Arial', 10))
+
+        self.button_indore_biometric = QPushButton('Upload Indore Biometric File', self)
+        self.button_indore_biometric.setObjectName('uploadButton')
+        self.button_indore_biometric.clicked.connect(self.upload_indore_biometric)
+
+        self.label_raipur_biometric = QLabel('Upload Raipur Biometric File', self)
+        self.label_raipur_biometric.setAlignment(Qt.AlignCenter)
+        self.label_raipur_biometric.setFont(QFont('Arial', 10))
+
+        self.button_raipur_biometric = QPushButton('Upload Raipur Biometric File', self)
+        self.button_raipur_biometric.setObjectName('uploadButton')
+        self.button_raipur_biometric.clicked.connect(self.upload_raipur_biometric)
 
         self.label_keka = QLabel('Upload Keka File', self)
         self.label_keka.setAlignment(Qt.AlignCenter)
@@ -54,8 +62,10 @@ class ModernApp(QWidget):
         self.label_status.setFont(QFont('Arial', 10))
 
         # Add widgets to the layout
-        self.layout.addWidget(self.label_biometric)
-        self.layout.addWidget(self.button_biometric)
+        self.layout.addWidget(self.label_indore_biometric)
+        self.layout.addWidget(self.button_indore_biometric)
+        self.layout.addWidget(self.label_raipur_biometric)
+        self.layout.addWidget(self.button_raipur_biometric)
         self.layout.addWidget(self.label_keka)
         self.layout.addWidget(self.button_keka)
         self.layout.addWidget(self.button_process)
@@ -65,7 +75,8 @@ class ModernApp(QWidget):
         self.setLayout(self.layout)
 
         # Variables to hold file paths
-        self.biometric_file = None
+        self.indore_biometric_file = None
+        self.raipur_biometric_file = None
         self.keka_file = None
         self.processed_file = None
 
@@ -106,11 +117,17 @@ class ModernApp(QWidget):
             }
         """)
 
-    def upload_biometric(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, "Select Biometric File", "", "Excel Files (*.xlsx *.xls)")
+    def upload_indore_biometric(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select Indore Biometric File", "", "Excel Files (*.xlsx *.xls)")
         if file_name:
-            self.biometric_file = file_name
-            self.label_biometric.setText(f"Selected: {file_name.split('/')[-1]}")
+            self.indore_biometric_file = file_name
+            self.label_indore_biometric.setText(f"Selected: {file_name.split('/')[-1]}")
+
+    def upload_raipur_biometric(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select Raipur Biometric File", "", "Excel Files (*.xlsx *.xls)")
+        if file_name:
+            self.raipur_biometric_file = file_name
+            self.label_raipur_biometric.setText(f"Selected: {file_name.split('/')[-1]}")
 
     def upload_keka(self):
         file_name, _ = QFileDialog.getOpenFileName(self, "Select Keka File", "", "Excel Files (*.xlsx *.xls)")
@@ -119,32 +136,29 @@ class ModernApp(QWidget):
             self.label_keka.setText(f"Selected: {file_name.split('/')[-1]}")
 
     def process_files(self):
-        if not self.biometric_file:
-            QMessageBox.warning(self, "Warning", "Please select the biometric file!")
+        if not self.indore_biometric_file:
+            QMessageBox.warning(self, "Warning", "Please select the Indore biometric file!")
+            return
+        if not self.raipur_biometric_file:
+            QMessageBox.warning(self, "Warning", "Please select the Raipur biometric file!")
             return
         if not self.keka_file:
-            QMessageBox.warning(self, "Warning", "Please select the keka file!")
+            QMessageBox.warning(self, "Warning", "Please select the Keka file!")
             return
         
         try:
-            # Process only the biometric file for now
-            # self.processed_file = self.process_biometric(self.biometric_file)
-            self.processed_file = transformation(biometric_path=self.biometric_file, keka_path=self.keka_file)
-            self.label_status.setText(f"Biometric file processed successfully.")
+            # Process the files using the updated transformation function
+            self.processed_file = transformation(
+                keka_path=self.keka_file,
+                indore_biometric_path=self.indore_biometric_file,
+                raipur_biometric_path=self.raipur_biometric_file
+            )
+            self.label_status.setText("Files processed successfully.")
             
             # Enable the download button
             self.button_download.setEnabled(True)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred during processing:\n{str(e)}")
-
-    def process_biometric(self, biometric_file):
-        # Just read the biometric file and save it back for now
-        biometric_df = pd.read_excel(biometric_file)
-        
-        # Perform any transformations here if needed. For now, we just save it as-is.
-        processed_file_path = "temp_processed_biometric_output.xlsx"
-        biometric_df.to_excel(processed_file_path, index=False)
-        return processed_file_path
 
     def download_file(self):
         try:
